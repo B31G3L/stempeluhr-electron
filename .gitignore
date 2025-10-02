@@ -5,69 +5,32 @@ package-lock.json
 # Build outputs
 dist/
 build/
-out/
 
-# Electron build artifacts
+# Electron artifacts
 *.dmg
 *.app
 *.exe
 *.zip
-*.deb
-*.rpm
-*.AppImage
 
 # OS files
 .DS_Store
 Thumbs.db
-Desktop.ini
 
-# IDE / Editor
+# IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-.project
-.settings/
-*.sublime-project
-*.sublime-workspace
 
 # Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # User data
 timetracker.json
 
-# Temporary files
+# Temp
 tmp/
 temp/
 *.tmp
 
-# Environment variables
+# Environment
 .env
 .env.local
-.env.*.local
-
-# Cache
-.cache/
-.npm/
-.eslintcache
-
-# macOS specific
-*.dmg
-.AppleDouble
-.LSOverride
-Icon
-
-# Windows specific
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Optional: Keep icons
-# !tray.png
-# !icon.png

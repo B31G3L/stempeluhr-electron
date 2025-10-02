@@ -1,4 +1,3 @@
-// main.js - Tyme - Moderne Zeiterfassung
 const { app, Tray, Menu, BrowserWindow, ipcMain, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -14,54 +13,44 @@ let updateInterval = null;
 const dataFile = path.join(app.getPath('userData'), 'timetracker.json');
 const backupDir = path.join(app.getPath('userData'), 'backups');
 
-// Auto-Start beim Login aktivieren
 app.setLoginItemSettings({
   openAtLogin: true,
   openAsHidden: true,
   name: 'Tyme'
 });
 
-// Daten laden mit Fehlerhandling
 function loadData() {
   try {
     if (fs.existsSync(dataFile)) {
       const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-      console.log('✅ Daten erfolgreich geladen');
+      console.log('✅ Daten geladen');
       return data;
     }
   } catch (error) {
-    console.error('❌ Fehler beim Laden der Daten:', error);
-    
-    // Backup erstellen, falls Datei korrupt ist
+    console.error('❌ Ladefehler:', error);
     if (fs.existsSync(dataFile)) {
       const backupFile = path.join(app.getPath('userData'), 'timetracker.json.backup');
       try {
         fs.copyFileSync(dataFile, backupFile);
-        console.log('📦 Backup erstellt:', backupFile);
-      } catch (backupError) {
-        console.error('❌ Backup fehlgeschlagen:', backupError);
-      }
+        console.log('📦 Backup erstellt');
+      } catch (e) {}
     }
   }
-  
   return { sessions: [], settings: { notifyOnHour: true } };
 }
 
-// Daten speichern mit Fehlerhandling
 function saveData(data) {
   try {
-    // Sicherstellen, dass das Verzeichnis existiert
     const dir = path.dirname(dataFile);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
-    fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
+    const tempFile = dataFile + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
+    fs.renameSync(tempFile, dataFile);
     console.log('💾 Daten gespeichert');
   } catch (error) {
-    console.error('❌ Fehler beim Speichern:', error);
-    
-    // Benachrichtigung bei Speicherfehler
+    console.error('❌ Speicherfehler:', error);
     if (Notification.isSupported()) {
       new Notification({
         title: 'Speicherfehler',
@@ -72,68 +61,47 @@ function saveData(data) {
   }
 }
 
-// Backup erstellen (täglich)
 function createBackup() {
   try {
     const data = loadData();
-    
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
-    
     const date = new Date().toISOString().split('T')[0];
     const backupFile = path.join(backupDir, `backup-${date}.json`);
-    
-    // Nur einmal pro Tag Backup erstellen
     if (!fs.existsSync(backupFile)) {
       fs.writeFileSync(backupFile, JSON.stringify(data, null, 2));
-      console.log('📦 Backup erstellt:', backupFile);
+      console.log('📦 Backup erstellt');
     }
-    
-    // Alte Backups löschen (älter als 30 Tage)
     cleanOldBackups();
   } catch (error) {
     console.error('❌ Backup-Fehler:', error);
   }
 }
 
-// Alte Backups entfernen
 function cleanOldBackups() {
   try {
     if (!fs.existsSync(backupDir)) return;
-    
     const files = fs.readdirSync(backupDir);
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-    
     files.forEach(file => {
       const filePath = path.join(backupDir, file);
       const stats = fs.statSync(filePath);
-      
       if (now - stats.mtimeMs > thirtyDays) {
         fs.unlinkSync(filePath);
-        console.log('🗑️ Altes Backup gelöscht:', file);
+        console.log('🗑️ Altes Backup gelöscht');
       }
     });
-  } catch (error) {
-    console.error('❌ Fehler beim Aufräumen der Backups:', error);
-  }
+  } catch (error) {}
 }
 
-// Benachrichtigung anzeigen
 function showNotification(title, body, urgency = 'normal') {
   if (Notification.isSupported()) {
-    const notification = new Notification({
-      title,
-      body,
-      urgency,
-      silent: false
-    });
-    notification.show();
+    new Notification({ title, body, urgency, silent: false }).show();
   }
 }
 
-// Zeit formatieren
 function formatDuration(ms) {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
@@ -141,7 +109,6 @@ function formatDuration(ms) {
   return `${hours}h ${minutes % 60}m`;
 }
 
-// Aktuelle Arbeitszeit berechnen
 function getCurrentDuration() {
   if (!currentSession) return 0;
   const now = Date.now();
@@ -152,26 +119,36 @@ function getCurrentDuration() {
   return Math.max(0, duration);
 }
 
-// Tray-Icon erstellen
 function createTrayIcon() {
   const iconPath = path.join(__dirname, 'tray.png');
-  
   if (fs.existsSync(iconPath)) {
     let icon = nativeImage.createFromPath(iconPath);
     icon = icon.resize({ width: 22, height: 22 });
     icon.setTemplateImage(true);
-    console.log('✅ Tray Icon geladen: tray.png (22x22)');
+    console.log('✅ Tray Icon geladen');
     return icon;
   }
-  
-  console.log('⚠️  tray.png nicht gefunden!');
-  console.log('   Erstelle das Icon mit dem Icon-Generator');
-  
-  // Fallback: Leeres Icon (nur Text auf macOS)
+  console.log('⚠️  tray.png nicht gefunden! Nutze icon-generator.html');
   return nativeImage.createEmpty();
 }
 
-// Tray-Menü erstellen
+const isMac = process.platform === 'darwin';
+const modifier = isMac ? 'Command' : 'Ctrl';
+
+function getWorkdaysInPeriod(sessions) {
+  const uniqueDays = new Set();
+  sessions.forEach(s => {
+    const date = new Date(s.start);
+    uniqueDays.add(date.toDateString());
+  });
+  return uniqueDays.size;
+}
+
+function calculateOvertime(totalMs, workdays) {
+  const expectedMs = workdays * 8 * 60 * 60 * 1000;
+  return totalMs - expectedMs;
+}
+
 function createTrayMenu() {
   const data = loadData();
   const todaySessions = data.sessions.filter(s => {
@@ -186,7 +163,6 @@ function createTrayMenu() {
   
   const menuTemplate = [];
   
-  // Status-Header
   if (currentSession) {
     const statusText = isPaused ? 'Pausiert' : 'Läuft';
     const statusEmoji = isPaused ? '⏸' : '▶️';
@@ -202,38 +178,34 @@ function createTrayMenu() {
   }
   
   menuTemplate.push(
-    {
-      label: `Heute · ${formatDuration(displayTotal)}`,
-      enabled: false
-    },
+    { label: `Heute · ${formatDuration(displayTotal)}`, enabled: false },
     { type: 'separator' }
   );
 
-  // Haupt-Aktionen
   if (!currentSession) {
     menuTemplate.push({
       label: 'Arbeit starten',
       click: startWork,
-      accelerator: 'Command+S'
+      accelerator: `${modifier}+S`
     });
   } else {
     if (!isPaused) {
       menuTemplate.push({
         label: 'Pause starten',
         click: pauseWork,
-        accelerator: 'Command+P'
+        accelerator: `${modifier}+P`
       });
     } else {
       menuTemplate.push({
         label: 'Pause beenden',
         click: resumeWork,
-        accelerator: 'Command+P'
+        accelerator: `${modifier}+P`
       });
     }
     menuTemplate.push({
       label: 'Arbeit beenden',
       click: stopWork,
-      accelerator: 'Command+E'
+      accelerator: `${modifier}+E`
     });
   }
 
@@ -242,16 +214,15 @@ function createTrayMenu() {
     {
       label: 'Zeiterfassung öffnen',
       click: showWindow,
-      accelerator: 'Command+O'
+      accelerator: `${modifier}+O`
     },
     {
       label: 'CSV Export',
       click: exportCSV,
-      accelerator: 'Command+X'
+      accelerator: `${modifier}+X`
     }
   );
 
-  // Überstunden-Info
   const allWorkdays = getWorkdaysInPeriod(data.sessions);
   const totalTime = data.sessions.reduce((sum, s) => sum + s.duration, 0);
   const overtime = calculateOvertime(totalTime, allWorkdays);
@@ -268,7 +239,6 @@ function createTrayMenu() {
     );
   }
 
-  // Auto-Start Option
   menuTemplate.push(
     { type: 'separator' },
     {
@@ -281,12 +251,9 @@ function createTrayMenu() {
           openAsHidden: true,
           name: 'Tyme'
         });
-        
         showNotification(
           'Auto-Start ' + (menuItem.checked ? 'aktiviert' : 'deaktiviert'),
-          menuItem.checked 
-            ? 'App startet jetzt beim Login 🚀' 
-            : 'App startet nicht mehr automatisch'
+          menuItem.checked ? 'App startet beim Login 🚀' : 'Kein Auto-Start mehr'
         );
       }
     },
@@ -302,37 +269,20 @@ function createTrayMenu() {
             defaultId: 0,
             title: 'Zeiterfassung läuft',
             message: 'Eine Zeiterfassung ist aktiv.',
-            detail: 'Möchtest du die Zeit beenden oder einfach die App schließen?'
+            detail: 'Möchtest du die Zeit beenden?'
           });
-          
           if (response === 0) return;
           if (response === 1) stopWork();
         }
         app.quit();
       },
-      accelerator: 'Command+Q'
+      accelerator: `${modifier}+Q`
     }
   );
 
   return Menu.buildFromTemplate(menuTemplate);
 }
 
-// Hilfsfunktionen
-function getWorkdaysInPeriod(sessions) {
-  const uniqueDays = new Set();
-  sessions.forEach(s => {
-    const date = new Date(s.start);
-    uniqueDays.add(date.toDateString());
-  });
-  return uniqueDays.size;
-}
-
-function calculateOvertime(totalMs, workdays) {
-  const expectedMs = workdays * 8 * 60 * 60 * 1000; // 8h pro Tag
-  return totalMs - expectedMs;
-}
-
-// CSV Export
 function exportCSV() {
   const data = loadData();
   const { dialog } = require('electron');
@@ -354,41 +304,31 @@ function exportCSV() {
         const pauses = s.pauses.length;
         csv.push(`${date},${start},${end},${hours},${pauses}`);
       });
-      
       fs.writeFileSync(filePath, csv.join('\n'));
-      showNotification('Export erfolgreich', `CSV gespeichert: ${path.basename(filePath)}`);
+      showNotification('Export erfolgreich', `CSV gespeichert`);
     } catch (error) {
-      console.error('❌ Export-Fehler:', error);
-      showNotification('Export fehlgeschlagen', 'CSV konnte nicht gespeichert werden', 'critical');
+      showNotification('Export fehlgeschlagen', 'Fehler', 'critical');
     }
   }
 }
 
-// Arbeit starten
 function startWork() {
-  currentSession = {
-    start: Date.now(),
-    pauses: []
-  };
+  currentSession = { start: Date.now(), pauses: [] };
   isPaused = false;
   pauseStart = null;
   totalPauseTime = 0;
   updateTray();
-  
-  showNotification('Zeit gestartet', 'Viel Erfolg beim Arbeiten! 💪');
+  showNotification('Zeit gestartet', 'Viel Erfolg! 💪');
 }
 
-// Pause
 function pauseWork() {
   if (!currentSession || isPaused) return;
   isPaused = true;
   pauseStart = Date.now();
   updateTray();
-  
   showNotification('Pause gestartet', 'Gönn dir eine Erholung ☕');
 }
 
-// Pause beenden
 function resumeWork() {
   if (!currentSession || !isPaused) return;
   const pauseDuration = Date.now() - pauseStart;
@@ -401,17 +341,12 @@ function resumeWork() {
   isPaused = false;
   pauseStart = null;
   updateTray();
-  
   showNotification('Pause beendet', 'Weiter geht\'s! 🚀');
 }
 
-// Arbeit beenden
 function stopWork() {
   if (!currentSession) return;
-  
-  if (isPaused) {
-    resumeWork();
-  }
+  if (isPaused) resumeWork();
   
   const duration = getCurrentDuration();
   const data = loadData();
@@ -430,28 +365,18 @@ function stopWork() {
   pauseStart = null;
   totalPauseTime = 0;
   updateTray();
-  
-  // Backup erstellen
   createBackup();
   
-  // Erfolgsbenachrichtigung
-  showNotification(
-    'Zeit beendet', 
-    `Gearbeitet: ${formatDuration(duration)} ✅`
-  );
+  showNotification('Zeit beendet', `Gearbeitet: ${formatDuration(duration)} ✅`);
   
-  // Fenster aktualisieren falls offen
   if (mainWindow) {
     mainWindow.webContents.send('data-updated');
   }
 }
 
-// Tray aktualisieren
 function updateTray() {
   if (tray) {
     tray.setContextMenu(createTrayMenu());
-    
-    // Tooltip aktualisieren
     if (currentSession) {
       const status = isPaused ? '⏸️ Pausiert' : '▶️ Läuft';
       tray.setToolTip(`Tyme - ${status} - ${formatDuration(getCurrentDuration())}`);
@@ -461,7 +386,6 @@ function updateTray() {
   }
 }
 
-// Fenster anzeigen
 function showWindow() {
   if (mainWindow) {
     mainWindow.show();
@@ -471,7 +395,7 @@ function showWindow() {
 
   mainWindow = new BrowserWindow({
     width: 900,
-    height: 1456,
+    height: 1000,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -482,15 +406,11 @@ function showWindow() {
 
   mainWindow.loadFile('index.html');
   
-  // DevTools nur in Development
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
   }
   
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
+  mainWindow.on('closed', () => { mainWindow = null; });
   mainWindow.on('close', (event) => {
     if (!app.isQuitting) {
       event.preventDefault();
@@ -499,111 +419,67 @@ function showWindow() {
   });
 }
 
-// App-Start
 app.whenReady().then(() => {
   console.log('🚀 Tyme startet...');
+  if (process.platform === 'darwin') app.setName('Tyme');
   
-  // Benachrichtigungen aktivieren
-  if (process.platform === 'darwin') {
-    app.setName('Tyme');
-  }
-  
-  // Tray erstellen
   tray = new Tray(createTrayIcon());
   tray.setToolTip('Tyme');
   tray.setContextMenu(createTrayMenu());
-  
-  // Doppelklick auf Tray öffnet Fenster
   tray.on('double-click', showWindow);
 
-  // Update-Intervall starten (jede Sekunde)
   updateInterval = setInterval(() => {
-    if (currentSession) {
-      updateTray();
-    }
+    if (currentSession && !isPaused) updateTray();
   }, 1000);
   
-  // Tägliches Backup (jeden Tag um Mitternacht)
   setInterval(() => {
     const now = new Date();
-    if (now.getHours() === 0 && now.getMinutes() === 0) {
-      createBackup();
-    }
-  }, 60000); // Jede Minute checken
+    if (now.getHours() === 0 && now.getMinutes() === 0) createBackup();
+  }, 60000);
   
-  // Erstes Backup bei Start
   createBackup();
-  
   console.log('✅ Tyme läuft!');
 });
 
 app.on('before-quit', () => {
   app.isQuitting = true;
   if (updateInterval) clearInterval(updateInterval);
-  
-  // Warnung wenn Session läuft
-  if (currentSession && !isPaused) {
-    console.log('⚠️  Session läuft noch beim Beenden!');
-  }
 });
 
-app.on('window-all-closed', (e) => {
-  e.preventDefault();
-});
+app.on('window-all-closed', (e) => e.preventDefault());
 
-// === IPC-Handler ===
-
-ipcMain.handle('get-sessions', () => {
-  return loadData();
-});
+// IPC Handler
+ipcMain.handle('get-sessions', () => loadData());
 
 ipcMain.handle('delete-session', (event, index) => {
   const data = loadData();
   const deleted = data.sessions.splice(index, 1)[0];
   saveData(data);
-  
-  showNotification('Eintrag gelöscht', 
-    `${new Date(deleted.start).toLocaleDateString('de-DE')} entfernt`);
-  
+  showNotification('Eintrag gelöscht', `${new Date(deleted.start).toLocaleDateString('de-DE')} entfernt`);
   return data;
 });
 
-ipcMain.handle('get-current-session', () => {
-  return {
-    active: currentSession !== null,
-    isPaused: isPaused,
-    duration: getCurrentDuration(),
-    start: currentSession?.start || null
-  };
-});
+ipcMain.handle('get-current-session', () => ({
+  active: currentSession !== null,
+  isPaused: isPaused,
+  duration: getCurrentDuration(),
+  start: currentSession?.start || null
+}));
 
-ipcMain.handle('start-work', () => {
-  startWork();
-  return { success: true };
-});
+ipcMain.handle('start-work', () => { startWork(); return { success: true }; });
 
 ipcMain.handle('toggle-pause', () => {
-  if (isPaused) {
-    resumeWork();
-  } else {
-    pauseWork();
-  }
+  isPaused ? resumeWork() : pauseWork();
   return { success: true };
 });
 
-ipcMain.handle('stop-work', () => {
-  stopWork();
-  return { success: true };
-});
+ipcMain.handle('stop-work', () => { stopWork(); return { success: true }; });
 
 ipcMain.handle('add-session', (event, session) => {
   const data = loadData();
   data.sessions.push(session);
   saveData(data);
-  
-  showNotification('Eintrag erstellt', 
-    `${new Date(session.start).toLocaleDateString('de-DE')} hinzugefügt`);
-  
+  showNotification('Eintrag erstellt', `${new Date(session.start).toLocaleDateString('de-DE')} hinzugefügt`);
   return data;
 });
 
@@ -611,9 +487,6 @@ ipcMain.handle('update-session', (event, index, session) => {
   const data = loadData();
   data.sessions[index] = session;
   saveData(data);
-  
-  showNotification('Eintrag aktualisiert', 
-    `${new Date(session.start).toLocaleDateString('de-DE')} geändert`);
-  
+  showNotification('Eintrag aktualisiert', `${new Date(session.start).toLocaleDateString('de-DE')} geändert`);
   return data;
 });

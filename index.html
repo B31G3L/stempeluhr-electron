@@ -186,10 +186,6 @@
       background: #c82333;
     }
 
-    .btn-icon {
-      font-size: 16px;
-    }
-
     .status-indicator {
       display: inline-block;
       width: 8px;
@@ -264,68 +260,22 @@
       margin-top: 4px;
     }
 
-    .sessions {
-      margin-top: 24px;
-    }
-
-    .sessions-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .sessions h2 {
-      font-size: 20px;
-      font-weight: 500;
-      color: #202124;
-    }
-
-    .filter-chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      background: white;
-      border: 1px solid #dadce0;
-      color: #5f6368;
-      padding: 8px 16px;
-      border-radius: 16px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-      outline: none;
-    }
-
-    body.dark-mode .chip {
-      background: #292a2d;
-      border-color: #5f6368;
+    body.dark-mode .stat-subtitle {
       color: #9aa0a6;
     }
 
-    .chip:hover {
-      background: #f8f9fa;
-      border-color: #202124;
+    .sessions h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    body.dark-mode .chip:hover {
-      background: #3c4043;
-      border-color: #e8eaed;
-    }
-
-    .chip.active {
-      background: #e8f0fe;
-      border-color: #1a73e8;
-      color: #1967d2;
-    }
-
-    body.dark-mode .chip.active {
-      background: #1a3a52;
-      border-color: #8ab4f8;
-      color: #8ab4f8;
+    body.dark-mode .sessions h2 {
+      color: #e8eaed;
     }
 
     .session-list {
@@ -341,8 +291,16 @@
       transition: background 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
+    body.dark-mode .session-item {
+      border-bottom-color: #3c4043;
+    }
+
     .session-item:hover {
       background: #f8f9fa;
+    }
+
+    body.dark-mode .session-item:hover {
+      background: #3c4043;
     }
 
     .session-item:last-child {
@@ -358,6 +316,11 @@
       font-weight: 500;
       color: #202124;
       margin-bottom: 4px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .session-date {
+      color: #e8eaed;
     }
 
     .session-time {
@@ -366,6 +329,11 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .session-time {
+      color: #9aa0a6;
     }
 
     .session-duration {
@@ -374,6 +342,11 @@
       color: #202124;
       margin-right: 24px;
       font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .session-duration {
+      color: #e8eaed;
     }
 
     .icon-button {
@@ -425,167 +398,6 @@
       color: #9aa0a6;
     }
 
-    .ripple {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .ripple::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(26, 115, 232, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .ripple:active::after {
-      width: 200px;
-      height: 200px;
-    }
-
-    ::-webkit-scrollbar {
-      width: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #dadce0;
-      border-radius: 6px;
-      border: 3px solid #fafafa;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #bdc1c6;
-    }
-
-    .material-icons {
-      font-family: 'Material Icons';
-      font-weight: normal;
-      font-style: normal;
-      font-size: 24px;
-      display: inline-block;
-      line-height: 1;
-      text-transform: none;
-      letter-spacing: normal;
-      word-wrap: normal;
-      white-space: nowrap;
-      direction: ltr;
-    }
-
-    .divider {
-      height: 1px;
-      background: #e8eaed;
-      margin: 8px 0;
-    }
-
-    /* Dialog/Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: fadeIn 0.2s;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .modal {
-      background: white;
-      border-radius: 8px;
-      padding: 24px;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 8px 32px rgba(60,64,67,.3);
-      animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .modal h3 {
-      font-size: 20px;
-      font-weight: 500;
-      color: #202124;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      color: #5f6368;
-      margin-bottom: 8px;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #dadce0;
-      border-radius: 4px;
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color 0.2s;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: #1a73e8;
-      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 24px;
-    }
-
-    .btn-text {
-      background: transparent;
-      border: none;
-      color: #1a73e8;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-
-    .btn-text:hover {
-      background: #f8f9fa;
-    }
-
-    /* Accordion */
     .accordion {
       margin-top: 40px;
     }
@@ -657,18 +469,178 @@
       padding: 24px 0;
     }
 
-    .recent-entries {
-      margin-bottom: 32px;
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
-    .recent-entries h2 {
-      font-size: 16px;
+    .chip {
+      background: white;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      padding: 8px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 14px;
       font-weight: 500;
-      color: #202124;
-      margin-bottom: 16px;
+      transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+      outline: none;
+    }
+
+    body.dark-mode .chip {
+      background: #292a2d;
+      border-color: #5f6368;
+      color: #9aa0a6;
+    }
+
+    .chip:hover {
+      background: #f8f9fa;
+      border-color: #202124;
+    }
+
+    body.dark-mode .chip:hover {
+      background: #3c4043;
+      border-color: #e8eaed;
+    }
+
+    .chip.active {
+      background: #e8f0fe;
+      border-color: #1a73e8;
+      color: #1967d2;
+    }
+
+    body.dark-mode .chip.active {
+      background: #1a3a52;
+      border-color: #8ab4f8;
+      color: #8ab4f8;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(60,64,67,.3);
+      animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    body.dark-mode .modal {
+      background: #292a2d;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal h3 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 20px;
+    }
+
+    body.dark-mode .modal h3 {
+      color: #e8eaed;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+
+    body.dark-mode .form-label {
+      color: #9aa0a6;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      background: white;
+      color: #202124;
+    }
+
+    body.dark-mode .form-input {
+      background: #3c4043;
+      border-color: #5f6368;
+      color: #e8eaed;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: #1a73e8;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-text:hover {
+      background: #f8f9fa;
+    }
+
+    body.dark-mode .btn-text {
+      color: #8ab4f8;
+    }
+
+    body.dark-mode .btn-text:hover {
+      background: #3c4043;
     }
 
     .section-subtitle {
@@ -677,11 +649,52 @@
       font-weight: 400;
     }
 
+    body.dark-mode .section-subtitle {
+      color: #9aa0a6;
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body.dark-mode ::-webkit-scrollbar-track {
+      background: #202124;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #dadce0;
+      border-radius: 6px;
+      border: 3px solid #fafafa;
+    }
+
+    body.dark-mode ::-webkit-scrollbar-thumb {
+      background: #5f6368;
+      border-color: #202124;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #bdc1c6;
+    }
+
+    body.dark-mode ::-webkit-scrollbar-thumb:hover {
+      background: #9aa0a6;
+    }
+
     @media (max-width: 768px) {
       .stats {
         grid-template-columns: 1fr;
       }
       
+      .session-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
       .session-duration {
         margin-right: 0;
       }
@@ -739,8 +752,7 @@
       </div>
     </div>
 
-    <!-- Recent Entries -->
-    <div class="recent-entries">
+    <div class="sessions">
       <h2>
         Letzte Einträge
         <button class="control-btn primary" onclick="showAddEntryDialog()" style="padding: 8px 20px;">
@@ -755,7 +767,6 @@
       </div>
     </div>
 
-    <!-- Accordion for All Entries -->
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion()">
         <div class="accordion-title">
@@ -767,11 +778,11 @@
       
       <div class="accordion-content" id="accordionContent">
         <div class="accordion-body">
-          <div class="filter-chips" style="margin-bottom: 20px;">
-            <button class="chip ripple active" data-filter="all">Alle</button>
-            <button class="chip ripple" data-filter="today">Heute</button>
-            <button class="chip ripple" data-filter="week">Woche</button>
-            <button class="chip ripple" data-filter="month">Monat</button>
+          <div class="filter-chips">
+            <button class="chip active" data-filter="all">Alle</button>
+            <button class="chip" data-filter="today">Heute</button>
+            <button class="chip" data-filter="week">Woche</button>
+            <button class="chip" data-filter="month">Monat</button>
           </div>
 
           <div class="card">
@@ -791,7 +802,6 @@
     let currentFilter = 'all';
     let editingSessionIndex = null;
 
-    // Dark Mode
     function toggleTheme() {
       const body = document.body;
       const icon = document.getElementById('themeIcon');
@@ -800,12 +810,9 @@
       const isDark = body.classList.contains('dark-mode');
       
       icon.textContent = isDark ? '☀️' : '🌙';
-      
-      // Save preference
       localStorage.setItem('darkMode', isDark);
     }
 
-    // Load theme preference on startup
     function loadTheme() {
       const isDark = localStorage.getItem('darkMode') === 'true';
       const body = document.body;
@@ -817,7 +824,6 @@
       }
     }
 
-    // Accordion Toggle
     function toggleAccordion() {
       const header = document.querySelector('.accordion-header');
       const content = document.getElementById('accordionContent');
@@ -826,7 +832,6 @@
       content.classList.toggle('active');
     }
 
-    // Timer Control Functions
     async function startWork() {
       await ipcRenderer.invoke('start-work');
       await updateCurrentSession();
@@ -845,7 +850,6 @@
       }
     }
 
-    // Dialog Functions
     function showAddEntryDialog() {
       const now = new Date();
       const dateStr = now.toISOString().split('T')[0];
@@ -969,12 +973,11 @@
     }
 
     function calculateOvertime(totalMs, workdays) {
-      const expectedMs = workdays * 8 * 60 * 60 * 1000; // 8 Stunden pro Arbeitstag
+      const expectedMs = workdays * 8 * 60 * 60 * 1000;
       return totalMs - expectedMs;
     }
 
     function getWorkdaysInPeriod(sessions) {
-      // Zähle eindeutige Arbeitstage
       const uniqueDays = new Set();
       sessions.forEach(s => {
         const date = new Date(s.start);
@@ -1093,15 +1096,12 @@
       const todaySessions = allSessions.filter(s => isToday(s.start));
       const weekSessions = allSessions.filter(s => isThisWeek(s.start));
       
-      // Berechne Gesamtzeiten
       const todayTotal = todaySessions.reduce((sum, s) => sum + s.duration, 0);
       const weekTotal = weekSessions.reduce((sum, s) => sum + s.duration, 0);
       
-      // Berechne Arbeitstage
       const todayWorkdays = todaySessions.length > 0 ? 1 : 0;
       const weekWorkdays = getWorkdaysInPeriod(weekSessions);
       
-      // Berechne Überstunden
       const todayOvertime = calculateOvertime(todayTotal, todayWorkdays);
       const weekOvertime = calculateOvertime(weekTotal, weekWorkdays);
       const totalOvertime = calculateOvertime(
@@ -1109,7 +1109,6 @@
         getWorkdaysInPeriod(allSessions)
       );
 
-      // Heute
       document.getElementById('todayTotal').textContent = formatDuration(todayTotal);
       const todayOvertimeEl = document.getElementById('todayOvertime');
       if (todayWorkdays > 0) {
@@ -1119,7 +1118,6 @@
         todayOvertimeEl.textContent = '';
       }
 
-      // Woche
       document.getElementById('weekTotal').textContent = formatDuration(weekTotal);
       const weekOvertimeEl = document.getElementById('weekOvertime');
       if (weekWorkdays > 0) {
@@ -1129,7 +1127,6 @@
         weekOvertimeEl.textContent = '';
       }
 
-      // Gesamt Überstunden
       const overtimeTotalEl = document.getElementById('overtimeTotal');
       overtimeTotalEl.textContent = formatDurationSigned(totalOvertime);
       overtimeTotalEl.className = 'stat-value';
@@ -1162,7 +1159,6 @@
         return;
       }
 
-      // Nur die letzten 3 Einträge
       const recentSessions = [...allSessions]
         .sort((a, b) => b.start - a.start)
         .slice(0, 3);
@@ -1182,10 +1178,10 @@
             </div>
           </div>
           <div class="session-duration">${formatDuration(session.duration)}</div>
-          <button class="icon-button ripple" onclick="editSession(${allSessions.indexOf(session)})" title="Bearbeiten">
+          <button class="icon-button" onclick="editSession(${allSessions.indexOf(session)})" title="Bearbeiten">
             ✎
           </button>
-          <button class="icon-button ripple" onclick="deleteSession(${allSessions.indexOf(session)})" title="Löschen">
+          <button class="icon-button" onclick="deleteSession(${allSessions.indexOf(session)})" title="Löschen">
             ×
           </button>
         </div>
@@ -1199,6 +1195,8 @@
         updateStats();
         renderSessions();
         renderRecentSessions();
+        document.getElementById('totalEntriesCount').textContent = 
+          `${allSessions.length} ${allSessions.length === 1 ? 'Eintrag' : 'Einträge'}`;
       }
     }
 
@@ -1209,7 +1207,6 @@
       renderRecentSessions();
       renderSessions();
       
-      // Update total count
       document.getElementById('totalEntriesCount').textContent = 
         `${allSessions.length} ${allSessions.length === 1 ? 'Eintrag' : 'Einträge'}`;
       
@@ -1233,10 +1230,4 @@
     }, 1000);
   </script>
 </body>
-</html>item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .session-
+</html>
