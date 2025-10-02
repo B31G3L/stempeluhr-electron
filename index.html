@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Stempeluhr - Zeiterfassung</title>
+  <title>Stempeluhr</title>
   <style>
     * {
       margin: 0;
@@ -11,84 +11,342 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fafafa;
+      padding: 24px;
       min-height: 100vh;
+      color: #202124;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background: #202124;
+      color: #e8eaed;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      padding: 30px;
     }
 
     h1 {
-      color: #333;
-      margin-bottom: 30px;
+      font-size: 24px;
+      font-weight: 400;
+      color: #202124;
+      margin-bottom: 32px;
+      letter-spacing: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    body.dark-mode h1 {
+      color: #e8eaed;
+    }
+
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+
+    body.dark-mode .theme-toggle {
+      border-color: #5f6368;
+      color: #e8eaed;
+    }
+
+    .theme-toggle:hover {
+      background: #f8f9fa;
+      border-color: #202124;
+    }
+
+    body.dark-mode .theme-toggle:hover {
+      background: #3c4043;
+      border-color: #e8eaed;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
+      overflow: hidden;
+      transition: box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.3s;
+    }
+
+    body.dark-mode .card {
+      background: #292a2d;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 4px 8px 3px rgba(0,0,0,.15);
+    }
+
+    .card:hover {
+      box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 8px 10px 1px rgba(60,64,67,.15);
+    }
+
+    body.dark-mode .card:hover {
+      box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 8px 10px 1px rgba(0,0,0,.15);
+    }
+
+    .current-session {
+      margin-bottom: 24px;
+      padding: 48px 24px;
       text-align: center;
-      font-size: 28px;
+    }
+
+    .current-session h2 {
+      font-size: 14px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .current-session h2 {
+      color: #9aa0a6;
+    }
+
+    .current-session .time {
+      font-size: 56px;
+      font-weight: 300;
+      color: #202124;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+      margin-bottom: 24px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .current-session .time {
+      color: #e8eaed;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .control-btn {
+      border: none;
+      padding: 12px 32px;
+      border-radius: 24px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(60,64,67,.3);
+    }
+
+    .control-btn:hover {
+      box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
+      transform: translateY(-1px);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    .control-btn.primary {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .control-btn.primary:hover {
+      background: #1557b0;
+    }
+
+    .control-btn.secondary {
+      background: #f9ab00;
+      color: white;
+    }
+
+    .control-btn.secondary:hover {
+      background: #ea8600;
+    }
+
+    .control-btn.danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .control-btn.danger:hover {
+      background: #c82333;
+    }
+
+    .btn-icon {
+      font-size: 16px;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #5f6368;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .current-session.active .status-indicator {
+      background: #1a73e8;
+      animation: pulse-blue 2s ease-in-out infinite;
+    }
+
+    .current-session.paused .status-indicator {
+      background: #f9ab00;
+    }
+
+    @keyframes pulse-blue {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.7); }
+      50% { opacity: .8; box-shadow: 0 0 0 8px rgba(26, 115, 232, 0); }
     }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
+      padding: 24px;
     }
 
     .stat-label {
       font-size: 14px;
-      opacity: 0.9;
-      margin-bottom: 8px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 12px;
+      letter-spacing: 0.25px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .stat-label {
+      color: #9aa0a6;
     }
 
     .stat-value {
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 32px;
+      font-weight: 400;
+      color: #202124;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .stat-value {
+      color: #e8eaed;
+    }
+
+    .stat-value.positive {
+      color: #137333;
+    }
+
+    .stat-value.negative {
+      color: #c5221f;
+    }
+
+    .stat-subtitle {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 4px;
     }
 
     .sessions {
-      margin-top: 30px;
+      margin-top: 24px;
     }
 
-    .sessions h2 {
-      color: #333;
-      margin-bottom: 20px;
-      font-size: 20px;
-    }
-
-    .session-list {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .session-item {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
+    .sessions-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .sessions h2 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: white;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      padding: 8px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+      outline: none;
+    }
+
+    body.dark-mode .chip {
+      background: #292a2d;
+      border-color: #5f6368;
+      color: #9aa0a6;
+    }
+
+    .chip:hover {
+      background: #f8f9fa;
+      border-color: #202124;
+    }
+
+    body.dark-mode .chip:hover {
+      background: #3c4043;
+      border-color: #e8eaed;
+    }
+
+    .chip.active {
+      background: #e8f0fe;
+      border-color: #1a73e8;
+      color: #1967d2;
+    }
+
+    body.dark-mode .chip.active {
+      background: #1a3a52;
+      border-color: #8ab4f8;
+      color: #8ab4f8;
+    }
+
+    .session-list {
+      margin-top: 16px;
+    }
+
+    .session-item {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e8eaed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
     .session-item:hover {
-      background: #e9ecef;
-      transform: translateX(4px);
+      background: #f8f9fa;
+    }
+
+    .session-item:last-child {
+      border-bottom: none;
     }
 
     .session-info {
@@ -96,107 +354,441 @@
     }
 
     .session-date {
-      font-weight: bold;
-      color: #495057;
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
       margin-bottom: 4px;
     }
 
     .session-time {
-      color: #6c757d;
       font-size: 14px;
+      color: #5f6368;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .session-duration {
-      font-size: 18px;
-      font-weight: bold;
-      color: #667eea;
-      margin-right: 12px;
+      font-size: 24px;
+      font-weight: 400;
+      color: #202124;
+      margin-right: 24px;
+      font-variant-numeric: tabular-nums;
     }
 
-    .delete-btn {
-      background: #dc3545;
-      color: white;
+    .icon-button {
+      background: transparent;
       border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
+      color: #5f6368;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+      font-size: 18px;
     }
 
-    .delete-btn:hover {
-      background: #c82333;
+    body.dark-mode .icon-button {
+      color: #9aa0a6;
+    }
+
+    .icon-button:hover {
+      background: #f8f9fa;
+      color: #202124;
+    }
+
+    body.dark-mode .icon-button:hover {
+      background: #3c4043;
+      color: #e8eaed;
+    }
+
+    .icon-button:active {
+      background: #e8eaed;
+    }
+
+    body.dark-mode .icon-button:active {
+      background: #5f6368;
     }
 
     .no-sessions {
       text-align: center;
-      color: #6c757d;
-      padding: 40px;
-      font-style: italic;
+      color: #5f6368;
+      padding: 64px 24px;
+      font-size: 14px;
+      transition: color 0.3s;
     }
 
-    .filter-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      justify-content: center;
+    body.dark-mode .no-sessions {
+      color: #9aa0a6;
     }
 
-    .filter-btn {
-      background: white;
-      border: 2px solid #667eea;
-      color: #667eea;
-      padding: 8px 20px;
+    .ripple {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ripple::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(26, 115, 232, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .ripple:active::after {
+      width: 200px;
+      height: 200px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #dadce0;
       border-radius: 6px;
+      border: 3px solid #fafafa;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #bdc1c6;
+    }
+
+    .material-icons {
+      font-family: 'Material Icons';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e8eaed;
+      margin: 8px 0;
+    }
+
+    /* Dialog/Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(60,64,67,.3);
+      animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal h3 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: #1a73e8;
+      padding: 8px 16px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-text:hover {
+      background: #f8f9fa;
+    }
+
+    /* Accordion */
+    .accordion {
+      margin-top: 40px;
+    }
+
+    .accordion-header {
+      background: white;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 20px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(60,64,67,.1);
     }
 
-    .filter-btn:hover {
-      background: #667eea;
-      color: white;
+    body.dark-mode .accordion-header {
+      background: #292a2d;
+      border-color: #3c4043;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
     }
 
-    .filter-btn.active {
-      background: #667eea;
-      color: white;
+    .accordion-header:hover {
+      background: #f8f9fa;
+      box-shadow: 0 1px 3px rgba(60,64,67,.3);
+    }
+
+    body.dark-mode .accordion-header:hover {
+      background: #3c4043;
+      box-shadow: 0 1px 3px rgba(0,0,0,.5);
+    }
+
+    .accordion-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: color 0.3s;
+    }
+
+    body.dark-mode .accordion-title {
+      color: #e8eaed;
+    }
+
+    .accordion-icon {
+      font-size: 20px;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      color: #5f6368;
+    }
+
+    .accordion-header.active .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .accordion-content.active {
+      max-height: 800px;
+    }
+
+    .accordion-body {
+      padding: 24px 0;
+    }
+
+    .recent-entries {
+      margin-bottom: 32px;
+    }
+
+    .recent-entries h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: #5f6368;
+      font-weight: 400;
+    }
+
+    @media (max-width: 768px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .session-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .session-duration {
+        margin-right: 0;
+      }
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <h1>⏱️ Stempeluhr - Zeiterfassung</h1>
+    <h1>
+      Stempeluhr
+      <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </h1>
+    
+    <div class="card current-session" id="currentSession">
+      <h2>
+        <span class="status-indicator"></span>
+        Bereit
+      </h2>
+      <div class="time">00:00:00</div>
+      
+      <div class="control-buttons">
+        <button id="startBtn" class="control-btn primary" onclick="startWork()">
+          <span class="btn-icon">▶</span>
+          Starten
+        </button>
+        <button id="pauseBtn" class="control-btn secondary" onclick="togglePause()" style="display: none;">
+          <span class="btn-icon">⏸</span>
+          Pause
+        </button>
+        <button id="stopBtn" class="control-btn danger" onclick="stopWork()" style="display: none;">
+          <span class="btn-icon">⏹</span>
+          Beenden
+        </button>
+      </div>
+    </div>
     
     <div class="stats">
-      <div class="stat-card">
+      <div class="card stat-card">
         <div class="stat-label">Heute</div>
         <div class="stat-value" id="todayTotal">0h 0m</div>
+        <div class="stat-subtitle" id="todayOvertime"></div>
       </div>
-      <div class="stat-card">
+      <div class="card stat-card">
         <div class="stat-label">Diese Woche</div>
         <div class="stat-value" id="weekTotal">0h 0m</div>
+        <div class="stat-subtitle" id="weekOvertime"></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Diesen Monat</div>
-        <div class="stat-value" id="monthTotal">0h 0m</div>
+      <div class="card stat-card">
+        <div class="stat-label">Überstunden Gesamt</div>
+        <div class="stat-value" id="overtimeTotal">+0h 0m</div>
+        <div class="stat-subtitle">Saldo</div>
       </div>
     </div>
 
-    <div class="sessions">
-      <h2>📋 Aufgezeichnete Zeiten</h2>
+    <!-- Recent Entries -->
+    <div class="recent-entries">
+      <h2>
+        Letzte Einträge
+        <button class="control-btn primary" onclick="showAddEntryDialog()" style="padding: 8px 20px;">
+          + Eintrag
+        </button>
+      </h2>
+
+      <div class="card">
+        <div class="session-list" id="recentSessionList">
+          <div class="no-sessions">Noch keine Zeiterfassungen vorhanden</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion for All Entries -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion()">
+        <div class="accordion-title">
+          <span>Alle Einträge anzeigen</span>
+          <span class="section-subtitle" id="totalEntriesCount">0 Einträge</span>
+        </div>
+        <span class="accordion-icon">▼</span>
+      </div>
       
-      <div class="filter-buttons">
-        <button class="filter-btn active" data-filter="all">Alle</button>
-        <button class="filter-btn" data-filter="today">Heute</button>
-        <button class="filter-btn" data-filter="week">Diese Woche</button>
-        <button class="filter-btn" data-filter="month">Dieser Monat</button>
-      </div>
+      <div class="accordion-content" id="accordionContent">
+        <div class="accordion-body">
+          <div class="filter-chips" style="margin-bottom: 20px;">
+            <button class="chip ripple active" data-filter="all">Alle</button>
+            <button class="chip ripple" data-filter="today">Heute</button>
+            <button class="chip ripple" data-filter="week">Woche</button>
+            <button class="chip ripple" data-filter="month">Monat</button>
+          </div>
 
-      <div class="session-list" id="sessionList">
-        <div class="no-sessions">Noch keine Zeiten erfasst</div>
+          <div class="card">
+            <div class="session-list" id="sessionList" style="max-height: 500px; overflow-y: auto;">
+              <div class="no-sessions">Keine Zeiterfassungen vorhanden</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
   </div>
 
   <script>
@@ -204,6 +796,167 @@
 
     let allSessions = [];
     let currentFilter = 'all';
+    let editingSessionIndex = null;
+
+    // Dark Mode
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      
+      body.classList.toggle('dark-mode');
+      const isDark = body.classList.contains('dark-mode');
+      
+      icon.textContent = isDark ? '☀️' : '🌙';
+      
+      // Save preference
+      localStorage.setItem('darkMode', isDark);
+    }
+
+    // Load theme preference on startup
+    function loadTheme() {
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      
+      if (isDark) {
+        body.classList.add('dark-mode');
+        icon.textContent = '☀️';
+      }
+    }
+
+    // Accordion Toggle
+    function toggleAccordion() {
+      const header = document.querySelector('.accordion-header');
+      const content = document.getElementById('accordionContent');
+      
+      header.classList.toggle('active');
+      content.classList.toggle('active');
+    }
+
+    // Timer Control Functions
+    async function startWork() {
+      await ipcRenderer.invoke('start-work');
+      await updateCurrentSession();
+    }
+
+    async function togglePause() {
+      await ipcRenderer.invoke('toggle-pause');
+      await updateCurrentSession();
+    }
+
+    async function stopWork() {
+      if (confirm('Zeiterfassung beenden?')) {
+        await ipcRenderer.invoke('stop-work');
+        await updateCurrentSession();
+        await loadData();
+      }
+    }
+
+    // Dialog Functions
+    function showAddEntryDialog() {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+      
+      showEditDialog({
+        date: dateStr,
+        startTime: '09:00',
+        endTime: timeStr,
+        isNew: true
+      });
+    }
+
+    function editSession(index) {
+      const session = allSessions[index];
+      const start = new Date(session.start);
+      const end = new Date(session.end);
+      
+      editingSessionIndex = index;
+      
+      showEditDialog({
+        date: start.toISOString().split('T')[0],
+        startTime: start.toTimeString().split(' ')[0].substring(0, 5),
+        endTime: end.toTimeString().split(' ')[0].substring(0, 5),
+        isNew: false
+      });
+    }
+
+    function showEditDialog(data) {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal">
+          <h3>${data.isNew ? 'Neuer Eintrag' : 'Eintrag bearbeiten'}</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Datum</label>
+            <input type="date" id="editDate" class="form-input" value="${data.date}">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Start</label>
+              <input type="time" id="editStartTime" class="form-input" value="${data.startTime}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ende</label>
+              <input type="time" id="editEndTime" class="form-input" value="${data.endTime}">
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button class="btn-text" onclick="closeDialog()">Abbrechen</button>
+            <button class="control-btn primary" onclick="saveEntry(${data.isNew})">
+              ${data.isNew ? 'Erstellen' : 'Speichern'}
+            </button>
+          </div>
+        </div>
+      `;
+      
+      overlay.onclick = (e) => {
+        if (e.target === overlay) closeDialog();
+      };
+      
+      document.body.appendChild(overlay);
+    }
+
+    function closeDialog() {
+      const overlay = document.querySelector('.modal-overlay');
+      if (overlay) overlay.remove();
+      editingSessionIndex = null;
+    }
+
+    async function saveEntry(isNew) {
+      const date = document.getElementById('editDate').value;
+      const startTime = document.getElementById('editStartTime').value;
+      const endTime = document.getElementById('editEndTime').value;
+      
+      const startDate = new Date(`${date}T${startTime}`);
+      const endDate = new Date(`${date}T${endTime}`);
+      
+      if (endDate <= startDate) {
+        alert('Die Endzeit muss nach der Startzeit liegen!');
+        return;
+      }
+      
+      const duration = endDate - startDate;
+      
+      const session = {
+        start: startDate.getTime(),
+        end: endDate.getTime(),
+        duration: duration,
+        pauses: []
+      };
+      
+      if (isNew) {
+        await ipcRenderer.invoke('add-session', session);
+      } else {
+        await ipcRenderer.invoke('update-session', editingSessionIndex, session);
+      }
+      
+      closeDialog();
+      await loadData();
+    }
 
     function formatDuration(ms) {
       const seconds = Math.floor(ms / 1000);
@@ -212,17 +965,59 @@
       return `${hours}h ${minutes % 60}m`;
     }
 
+    function formatDurationSigned(ms) {
+      const isNegative = ms < 0;
+      const absMs = Math.abs(ms);
+      const seconds = Math.floor(absMs / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const sign = isNegative ? '−' : '+';
+      return `${sign}${hours}h ${minutes % 60}m`;
+    }
+
+    function calculateOvertime(totalMs, workdays) {
+      const expectedMs = workdays * 8 * 60 * 60 * 1000; // 8 Stunden pro Arbeitstag
+      return totalMs - expectedMs;
+    }
+
+    function getWorkdaysInPeriod(sessions) {
+      // Zähle eindeutige Arbeitstage
+      const uniqueDays = new Set();
+      sessions.forEach(s => {
+        const date = new Date(s.start);
+        uniqueDays.add(date.toDateString());
+      });
+      return uniqueDays.size;
+    }
+
+    function formatTime(ms) {
+      const seconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      return `${String(hours).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    }
+
     function formatDate(timestamp) {
       const date = new Date(timestamp);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (date.toDateString() === today.toDateString()) {
+        return 'Heute';
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Gestern';
+      }
+      
       return date.toLocaleDateString('de-DE', { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
       });
     }
 
-    function formatTime(timestamp) {
+    function formatTimeShort(timestamp) {
       const date = new Date(timestamp);
       return date.toLocaleTimeString('de-DE', { 
         hour: '2-digit', 
@@ -265,17 +1060,91 @@
       }
     }
 
+    async function updateCurrentSession() {
+      const current = await ipcRenderer.invoke('get-current-session');
+      const sessionEl = document.getElementById('currentSession');
+      const timeEl = sessionEl.querySelector('.time');
+      const titleEl = sessionEl.querySelector('h2');
+      
+      const startBtn = document.getElementById('startBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      
+      sessionEl.classList.remove('active', 'paused');
+      
+      if (current.active) {
+        startBtn.style.display = 'none';
+        pauseBtn.style.display = 'flex';
+        stopBtn.style.display = 'flex';
+        
+        if (current.isPaused) {
+          titleEl.innerHTML = '<span class="status-indicator"></span>Pausiert';
+          sessionEl.classList.add('paused');
+          pauseBtn.innerHTML = '<span class="btn-icon">▶</span>Fortsetzen';
+        } else {
+          titleEl.innerHTML = '<span class="status-indicator"></span>Läuft';
+          sessionEl.classList.add('active');
+          pauseBtn.innerHTML = '<span class="btn-icon">⏸</span>Pause';
+        }
+        timeEl.textContent = formatTime(current.duration);
+      } else {
+        startBtn.style.display = 'flex';
+        pauseBtn.style.display = 'none';
+        stopBtn.style.display = 'none';
+        titleEl.innerHTML = '<span class="status-indicator"></span>Bereit';
+        timeEl.textContent = '00:00:00';
+      }
+    }
+
     function updateStats() {
       const todaySessions = allSessions.filter(s => isToday(s.start));
       const weekSessions = allSessions.filter(s => isThisWeek(s.start));
-      const monthSessions = allSessions.filter(s => isThisMonth(s.start));
+      
+      // Berechne Gesamtzeiten
+      const todayTotal = todaySessions.reduce((sum, s) => sum + s.duration, 0);
+      const weekTotal = weekSessions.reduce((sum, s) => sum + s.duration, 0);
+      
+      // Berechne Arbeitstage
+      const todayWorkdays = todaySessions.length > 0 ? 1 : 0;
+      const weekWorkdays = getWorkdaysInPeriod(weekSessions);
+      
+      // Berechne Überstunden
+      const todayOvertime = calculateOvertime(todayTotal, todayWorkdays);
+      const weekOvertime = calculateOvertime(weekTotal, weekWorkdays);
+      const totalOvertime = calculateOvertime(
+        allSessions.reduce((sum, s) => sum + s.duration, 0),
+        getWorkdaysInPeriod(allSessions)
+      );
 
-      document.getElementById('todayTotal').textContent = 
-        formatDuration(todaySessions.reduce((sum, s) => sum + s.duration, 0));
-      document.getElementById('weekTotal').textContent = 
-        formatDuration(weekSessions.reduce((sum, s) => sum + s.duration, 0));
-      document.getElementById('monthTotal').textContent = 
-        formatDuration(monthSessions.reduce((sum, s) => sum + s.duration, 0));
+      // Heute
+      document.getElementById('todayTotal').textContent = formatDuration(todayTotal);
+      const todayOvertimeEl = document.getElementById('todayOvertime');
+      if (todayWorkdays > 0) {
+        todayOvertimeEl.textContent = formatDurationSigned(todayOvertime);
+        todayOvertimeEl.style.color = todayOvertime >= 0 ? '#137333' : '#c5221f';
+      } else {
+        todayOvertimeEl.textContent = '';
+      }
+
+      // Woche
+      document.getElementById('weekTotal').textContent = formatDuration(weekTotal);
+      const weekOvertimeEl = document.getElementById('weekOvertime');
+      if (weekWorkdays > 0) {
+        weekOvertimeEl.textContent = `${formatDurationSigned(weekOvertime)} · ${weekWorkdays} Tag${weekWorkdays > 1 ? 'e' : ''}`;
+        weekOvertimeEl.style.color = weekOvertime >= 0 ? '#137333' : '#c5221f';
+      } else {
+        weekOvertimeEl.textContent = '';
+      }
+
+      // Gesamt Überstunden
+      const overtimeTotalEl = document.getElementById('overtimeTotal');
+      overtimeTotalEl.textContent = formatDurationSigned(totalOvertime);
+      overtimeTotalEl.className = 'stat-value';
+      if (totalOvertime > 0) {
+        overtimeTotalEl.classList.add('positive');
+      } else if (totalOvertime < 0) {
+        overtimeTotalEl.classList.add('negative');
+      }
     }
 
     function renderSessions() {
@@ -283,31 +1152,55 @@
       const filteredSessions = filterSessions(currentFilter);
       
       if (filteredSessions.length === 0) {
-        sessionList.innerHTML = '<div class="no-sessions">Keine Zeiten für diesen Filter</div>';
+        sessionList.innerHTML = '<div class="no-sessions">Keine Zeiterfassungen für diesen Zeitraum</div>';
         return;
       }
 
       sessionList.innerHTML = filteredSessions
         .sort((a, b) => b.start - a.start)
-        .map((session, index) => `
-          <div class="session-item">
-            <div class="session-info">
-              <div class="session-date">${formatDate(session.start)}</div>
-              <div class="session-time">
-                ${formatTime(session.start)} - ${formatTime(session.end)}
-                ${session.pauses.length > 0 ? ` • ${session.pauses.length} Pause(n)` : ''}
-              </div>
+        .map((session) => createSessionHTML(session)).join('');
+    }
+
+    function renderRecentSessions() {
+      const sessionList = document.getElementById('recentSessionList');
+      
+      if (allSessions.length === 0) {
+        sessionList.innerHTML = '<div class="no-sessions">Noch keine Zeiterfassungen vorhanden</div>';
+        return;
+      }
+
+      // Nur die letzten 3 Einträge
+      const recentSessions = [...allSessions]
+        .sort((a, b) => b.start - a.start)
+        .slice(0, 3);
+
+      sessionList.innerHTML = recentSessions
+        .map((session) => createSessionHTML(session)).join('');
+    }
+
+    function createSessionHTML(session) {
+      return `
+        <div class="session-item">
+          <div class="session-info">
+            <div class="session-date">${formatDate(session.start)}</div>
+            <div class="session-time">
+              ${formatTimeShort(session.start)} – ${formatTimeShort(session.end)}
+              ${session.pauses.length > 0 ? `<span style="color: #f9ab00;">● ${session.pauses.length} Pause${session.pauses.length > 1 ? 'n' : ''}</span>` : ''}
             </div>
-            <div class="session-duration">${formatDuration(session.duration)}</div>
-            <button class="delete-btn" onclick="deleteSession(${allSessions.indexOf(session)})">
-              🗑️ Löschen
-            </button>
           </div>
-        `).join('');
+          <div class="session-duration">${formatDuration(session.duration)}</div>
+          <button class="icon-button ripple" onclick="editSession(${allSessions.indexOf(session)})" title="Bearbeiten">
+            ✎
+          </button>
+          <button class="icon-button ripple" onclick="deleteSession(${allSessions.indexOf(session)})" title="Löschen">
+            ×
+          </button>
+        </div>
+      `;
     }
 
     async function deleteSession(index) {
-      if (confirm('Diese Zeit wirklich löschen?')) {
+      if (confirm('Diese Zeiterfassung wirklich löschen?')) {
         const data = await ipcRenderer.invoke('delete-session', index);
         allSessions = data.sessions;
         updateStats();
@@ -319,24 +1212,31 @@
       const data = await ipcRenderer.invoke('get-sessions');
       allSessions = data.sessions;
       updateStats();
+      renderRecentSessions();
       renderSessions();
+      
+      // Update total count
+      document.getElementById('totalEntriesCount').textContent = 
+        `${allSessions.length} ${allSessions.length === 1 ? 'Eintrag' : 'Einträge'}`;
+      
+      await updateCurrentSession();
     }
 
-    // Filter-Buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    document.querySelectorAll('.chip').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentFilter = e.target.dataset.filter;
+        document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentFilter = e.currentTarget.dataset.filter;
         renderSessions();
       });
     });
 
-    // Initial laden
     loadData();
-
-    // Alle 5 Sekunden aktualisieren
-    setInterval(loadData, 5000);
+    loadTheme();
+    setInterval(async () => {
+      await updateCurrentSession();
+      await loadData();
+    }, 1000);
   </script>
 </body>
 </html>
