@@ -1,5 +1,5 @@
-// main.js - Verbesserte Hauptdatei
-const { app, Tray, Menu, BrowserWindow, ipcMain, nativeImage } = require('electron');
+// main.js - Verbesserte Hauptdatei mit Benachrichtigungen & Fehlerhandling
+const { app, Tray, Menu, BrowserWindow, ipcMain, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -12,26 +12,117 @@ let totalPauseTime = 0;
 let updateInterval = null;
 
 const dataFile = path.join(app.getPath('userData'), 'timetracker.json');
+const backupDir = path.join(app.getPath('userData'), 'backups');
 
-// Daten laden
+// Daten laden mit Fehlerhandling
 function loadData() {
-  if (fs.existsSync(dataFile)) {
-    try {
-      return JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } catch (error) {
-      console.error('Fehler beim Laden der Daten:', error);
-      return { sessions: [], settings: { notifyOnHour: true } };
+  try {
+    if (fs.existsSync(dataFile)) {
+      const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+      console.log('✅ Daten erfolgreich geladen');
+      return data;
+    }
+  } catch (error) {
+    console.error('❌ Fehler beim Laden der Daten:', error);
+    
+    // Backup erstellen, falls Datei korrupt ist
+    if (fs.existsSync(dataFile)) {
+      const backupFile = path.join(app.getPath('userData'), 'timetracker.json.backup');
+      try {
+        fs.copyFileSync(dataFile, backupFile);
+        console.log('📦 Backup erstellt:', backupFile);
+      } catch (backupError) {
+        console.error('❌ Backup fehlgeschlagen:', backupError);
+      }
     }
   }
+  
   return { sessions: [], settings: { notifyOnHour: true } };
 }
 
-// Daten speichern
+// Daten speichern mit Fehlerhandling
 function saveData(data) {
   try {
+    // Sicherstellen, dass das Verzeichnis existiert
+    const dir = path.dirname(dataFile);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    
     fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
+    console.log('💾 Daten gespeichert');
   } catch (error) {
-    console.error('Fehler beim Speichern:', error);
+    console.error('❌ Fehler beim Speichern:', error);
+    
+    // Benachrichtigung bei Speicherfehler
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Speicherfehler',
+        body: 'Zeitdaten konnten nicht gespeichert werden!',
+        urgency: 'critical'
+      }).show();
+    }
+  }
+}
+
+// Backup erstellen (täglich)
+function createBackup() {
+  try {
+    const data = loadData();
+    
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+    
+    const date = new Date().toISOString().split('T')[0];
+    const backupFile = path.join(backupDir, `backup-${date}.json`);
+    
+    // Nur einmal pro Tag Backup erstellen
+    if (!fs.existsSync(backupFile)) {
+      fs.writeFileSync(backupFile, JSON.stringify(data, null, 2));
+      console.log('📦 Backup erstellt:', backupFile);
+    }
+    
+    // Alte Backups löschen (älter als 30 Tage)
+    cleanOldBackups();
+  } catch (error) {
+    console.error('❌ Backup-Fehler:', error);
+  }
+}
+
+// Alte Backups entfernen
+function cleanOldBackups() {
+  try {
+    if (!fs.existsSync(backupDir)) return;
+    
+    const files = fs.readdirSync(backupDir);
+    const now = Date.now();
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    
+    files.forEach(file => {
+      const filePath = path.join(backupDir, file);
+      const stats = fs.statSync(filePath);
+      
+      if (now - stats.mtimeMs > thirtyDays) {
+        fs.unlinkSync(filePath);
+        console.log('🗑️ Altes Backup gelöscht:', file);
+      }
+    });
+  } catch (error) {
+    console.error('❌ Fehler beim Aufräumen der Backups:', error);
+  }
+}
+
+// Benachrichtigung anzeigen
+function showNotification(title, body, urgency = 'normal') {
+  if (Notification.isSupported()) {
+    const notification = new Notification({
+      title,
+      body,
+      urgency,
+      silent: false
+    });
+    notification.show();
   }
 }
 
@@ -54,28 +145,22 @@ function getCurrentDuration() {
   return Math.max(0, duration);
 }
 
-// Tray-Icon erstellen für macOS
+// Tray-Icon erstellen
 function createTrayIcon() {
   const iconPath = path.join(__dirname, 'tray.png');
   
-  // Versuche das Icon zu laden
   if (fs.existsSync(iconPath)) {
     let icon = nativeImage.createFromPath(iconPath);
-    
-    // Größe auf 22x22 (Standard macOS Tray) anpassen
     icon = icon.resize({ width: 22, height: 22 });
-    
-    // Für macOS: Template Mode aktivieren
     icon.setTemplateImage(true);
-    
-    console.log('✅ Tray Icon geladen und skaliert: tray.png (22x22)');
+    console.log('✅ Tray Icon geladen: tray.png (22x22)');
     return icon;
   }
   
   console.log('⚠️  tray.png nicht gefunden!');
-  console.log('   Speichere dein Icon als "tray.png" im Projektordner neben main.js');
+  console.log('   Erstelle das Icon mit dem Icon-Generator');
   
-  // Fallback: Leeres Icon
+  // Fallback: Leeres Icon (nur Text auf macOS)
   return nativeImage.createEmpty();
 }
 
@@ -204,7 +289,7 @@ function createTrayMenu() {
   return Menu.buildFromTemplate(menuTemplate);
 }
 
-// Hilfsfunktion für Überstunden-Berechnung
+// Hilfsfunktionen
 function getWorkdaysInPeriod(sessions) {
   const uniqueDays = new Set();
   sessions.forEach(s => {
@@ -215,7 +300,7 @@ function getWorkdaysInPeriod(sessions) {
 }
 
 function calculateOvertime(totalMs, workdays) {
-  const expectedMs = workdays * 8 * 60 * 60 * 1000;
+  const expectedMs = workdays * 8 * 60 * 60 * 1000; // 8h pro Tag
   return totalMs - expectedMs;
 }
 
@@ -231,17 +316,23 @@ function exportCSV() {
   });
   
   if (filePath) {
-    const csv = ['Datum,Start,Ende,Dauer (Stunden),Pausen'];
-    data.sessions.forEach(s => {
-      const date = new Date(s.start).toLocaleDateString('de-DE');
-      const start = new Date(s.start).toLocaleTimeString('de-DE');
-      const end = new Date(s.end).toLocaleTimeString('de-DE');
-      const hours = (s.duration / 1000 / 60 / 60).toFixed(2);
-      const pauses = s.pauses.length;
-      csv.push(`${date},${start},${end},${hours},${pauses}`);
-    });
-    
-    fs.writeFileSync(filePath, csv.join('\n'));
+    try {
+      const csv = ['Datum,Start,Ende,Dauer (Stunden),Pausen'];
+      data.sessions.forEach(s => {
+        const date = new Date(s.start).toLocaleDateString('de-DE');
+        const start = new Date(s.start).toLocaleTimeString('de-DE');
+        const end = new Date(s.end).toLocaleTimeString('de-DE');
+        const hours = (s.duration / 1000 / 60 / 60).toFixed(2);
+        const pauses = s.pauses.length;
+        csv.push(`${date},${start},${end},${hours},${pauses}`);
+      });
+      
+      fs.writeFileSync(filePath, csv.join('\n'));
+      showNotification('Export erfolgreich', `CSV gespeichert: ${path.basename(filePath)}`);
+    } catch (error) {
+      console.error('❌ Export-Fehler:', error);
+      showNotification('Export fehlgeschlagen', 'CSV konnte nicht gespeichert werden', 'critical');
+    }
   }
 }
 
@@ -255,6 +346,8 @@ function startWork() {
   pauseStart = null;
   totalPauseTime = 0;
   updateTray();
+  
+  showNotification('Zeit gestartet', 'Viel Erfolg beim Arbeiten! 💪');
 }
 
 // Pause
@@ -263,6 +356,8 @@ function pauseWork() {
   isPaused = true;
   pauseStart = Date.now();
   updateTray();
+  
+  showNotification('Pause gestartet', 'Gönn dir eine Erholung ☕');
 }
 
 // Pause beenden
@@ -278,6 +373,8 @@ function resumeWork() {
   isPaused = false;
   pauseStart = null;
   updateTray();
+  
+  showNotification('Pause beendet', 'Weiter geht\'s! 🚀');
 }
 
 // Arbeit beenden
@@ -288,11 +385,12 @@ function stopWork() {
     resumeWork();
   }
   
+  const duration = getCurrentDuration();
   const data = loadData();
   const session = {
     start: currentSession.start,
     end: Date.now(),
-    duration: getCurrentDuration(),
+    duration: duration,
     pauses: currentSession.pauses
   };
   
@@ -304,6 +402,15 @@ function stopWork() {
   pauseStart = null;
   totalPauseTime = 0;
   updateTray();
+  
+  // Backup erstellen
+  createBackup();
+  
+  // Erfolgsbenachrichtigung
+  showNotification(
+    'Zeit beendet', 
+    `Gearbeitet: ${formatDuration(duration)} ✅`
+  );
   
   // Fenster aktualisieren falls offen
   if (mainWindow) {
@@ -336,15 +443,21 @@ function showWindow() {
 
   mainWindow = new BrowserWindow({
     width: 900,
-    height: 1456, // Goldener Schnitt: 900 * 1.618
+    height: 1456,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
-    title: 'Stempeluhr - Zeiterfassung'
+    title: 'Stempeluhr - Zeiterfassung',
+    icon: path.join(__dirname, 'icon.png')
   });
 
   mainWindow.loadFile('index.html');
+  
+  // DevTools nur in Development
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
   
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -360,6 +473,14 @@ function showWindow() {
 
 // App-Start
 app.whenReady().then(() => {
+  console.log('🚀 Stempeluhr startet...');
+  
+  // Benachrichtigungen aktivieren
+  if (process.platform === 'darwin') {
+    app.setName('Stempeluhr');
+  }
+  
+  // Tray erstellen
   tray = new Tray(createTrayIcon());
   tray.setToolTip('Stempeluhr');
   tray.setContextMenu(createTrayMenu());
@@ -367,32 +488,55 @@ app.whenReady().then(() => {
   // Doppelklick auf Tray öffnet Fenster
   tray.on('double-click', showWindow);
 
-  // Update-Intervall starten
+  // Update-Intervall starten (jede Sekunde)
   updateInterval = setInterval(() => {
     if (currentSession) {
       updateTray();
     }
   }, 1000);
+  
+  // Tägliches Backup (jeden Tag um Mitternacht)
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+      createBackup();
+    }
+  }, 60000); // Jede Minute checken
+  
+  // Erstes Backup bei Start
+  createBackup();
+  
+  console.log('✅ Stempeluhr läuft!');
 });
 
 app.on('before-quit', () => {
   app.isQuitting = true;
   if (updateInterval) clearInterval(updateInterval);
+  
+  // Warnung wenn Session läuft
+  if (currentSession && !isPaused) {
+    console.log('⚠️  Session läuft noch beim Beenden!');
+  }
 });
 
 app.on('window-all-closed', (e) => {
   e.preventDefault();
 });
 
-// IPC-Handler
+// === IPC-Handler ===
+
 ipcMain.handle('get-sessions', () => {
   return loadData();
 });
 
 ipcMain.handle('delete-session', (event, index) => {
   const data = loadData();
-  data.sessions.splice(index, 1);
+  const deleted = data.sessions.splice(index, 1)[0];
   saveData(data);
+  
+  showNotification('Eintrag gelöscht', 
+    `${new Date(deleted.start).toLocaleDateString('de-DE')} entfernt`);
+  
   return data;
 });
 
@@ -428,6 +572,10 @@ ipcMain.handle('add-session', (event, session) => {
   const data = loadData();
   data.sessions.push(session);
   saveData(data);
+  
+  showNotification('Eintrag erstellt', 
+    `${new Date(session.start).toLocaleDateString('de-DE')} hinzugefügt`);
+  
   return data;
 });
 
@@ -435,5 +583,9 @@ ipcMain.handle('update-session', (event, index, session) => {
   const data = loadData();
   data.sessions[index] = session;
   saveData(data);
+  
+  showNotification('Eintrag aktualisiert', 
+    `${new Date(session.start).toLocaleDateString('de-DE')} geändert`);
+  
   return data;
 });

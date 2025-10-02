@@ -6,6 +6,9 @@
   "scripts": {
     "start": "electron .",
     "build:mac": "electron-builder --mac",
+    "build:mac-arm": "electron-builder --mac --arm64",
+    "build:mac-intel": "electron-builder --mac --x64",
+    "build:mac-universal": "electron-builder --mac --universal",
     "build:win": "electron-builder --win",
     "build:all": "electron-builder --mac --win"
   },
@@ -19,10 +22,42 @@
   "build": {
     "appId": "com.stempeluhr.app",
     "productName": "Stempeluhr",
+    "copyright": "Copyright © 2025 ${author}",
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "icon.png",
-      "target": ["dmg", "zip"]
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 400
+      }
     },
     "win": {
       "icon": "icon.png",
@@ -31,7 +66,13 @@
     "files": [
       "main.js",
       "index.html",
-      "icon.png"
-    ]
+      "icon.png",
+      "tray.png",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    }
   }
 }
