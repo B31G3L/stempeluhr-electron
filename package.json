@@ -1,7 +1,7 @@
 {
-  "name": "stempeluhr",
+  "name": "tyme",
   "version": "1.0.0",
-  "description": "Zeiterfassungs-Tool mit Tray-Icon für Mac und Windows",
+  "description": "Moderne Zeiterfassung mit Tray-Icon für Mac und Windows",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,10 +9,11 @@
     "build:mac-arm": "electron-builder --mac --arm64",
     "build:mac-intel": "electron-builder --mac --x64",
     "build:mac-universal": "electron-builder --mac --universal",
-    "build:win": "electron-builder --win",
+    "build:win": "electron-builder --win --x64",
+    "build:win32": "electron-builder --win --ia32",
     "build:all": "electron-builder --mac --win"
   },
-  "keywords": ["zeiterfassung", "stempeluhr", "timetracker"],
+  "keywords": ["zeiterfassung", "timetracker", "tyme", "productivity"],
   "author": "Dein Name",
   "license": "MIT",
   "devDependencies": {
@@ -20,8 +21,8 @@
     "electron-builder": "^24.9.1"
   },
   "build": {
-    "appId": "com.stempeluhr.app",
-    "productName": "Stempeluhr",
+    "appId": "com.tyme.app",
+    "productName": "Tyme",
     "copyright": "Copyright © 2025 ${author}",
     "mac": {
       "category": "public.app-category.productivity",

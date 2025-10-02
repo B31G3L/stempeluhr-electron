@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Stempeluhr</title>
+  <title>Tyme</title>
   <style>
     * {
       margin: 0;
@@ -682,12 +682,6 @@
         grid-template-columns: 1fr;
       }
       
-      .session-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
       .session-duration {
         margin-right: 0;
       }
@@ -698,7 +692,7 @@
 <body>
   <div class="container">
     <h1>
-      Stempeluhr
+      Tyme
       <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln">
         <span id="themeIcon">🌙</span>
       </button>
@@ -788,7 +782,6 @@
         </div>
       </div>
     </div>
-  </div>
   </div>
 
   <script>
@@ -1205,6 +1198,7 @@
         allSessions = data.sessions;
         updateStats();
         renderSessions();
+        renderRecentSessions();
       }
     }
 
@@ -1239,4 +1233,10 @@
     }, 1000);
   </script>
 </body>
-</html>
+</html>item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .session-

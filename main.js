@@ -1,4 +1,4 @@
-// main.js - Verbesserte Hauptdatei mit Benachrichtigungen & Fehlerhandling
+// main.js - Tyme - Moderne Zeiterfassung
 const { app, Tray, Menu, BrowserWindow, ipcMain, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -13,6 +13,13 @@ let updateInterval = null;
 
 const dataFile = path.join(app.getPath('userData'), 'timetracker.json');
 const backupDir = path.join(app.getPath('userData'), 'backups');
+
+// Auto-Start beim Login aktivieren
+app.setLoginItemSettings({
+  openAtLogin: true,
+  openAsHidden: true,
+  name: 'Tyme'
+});
 
 // Daten laden mit Fehlerhandling
 function loadData() {
@@ -261,7 +268,28 @@ function createTrayMenu() {
     );
   }
 
+  // Auto-Start Option
   menuTemplate.push(
+    { type: 'separator' },
+    {
+      label: 'Beim Login starten',
+      type: 'checkbox',
+      checked: app.getLoginItemSettings().openAtLogin,
+      click: (menuItem) => {
+        app.setLoginItemSettings({
+          openAtLogin: menuItem.checked,
+          openAsHidden: true,
+          name: 'Tyme'
+        });
+        
+        showNotification(
+          'Auto-Start ' + (menuItem.checked ? 'aktiviert' : 'deaktiviert'),
+          menuItem.checked 
+            ? 'App startet jetzt beim Login 🚀' 
+            : 'App startet nicht mehr automatisch'
+        );
+      }
+    },
     { type: 'separator' },
     {
       label: 'Beenden',
@@ -426,9 +454,9 @@ function updateTray() {
     // Tooltip aktualisieren
     if (currentSession) {
       const status = isPaused ? '⏸️ Pausiert' : '▶️ Läuft';
-      tray.setToolTip(`Stempeluhr - ${status} - ${formatDuration(getCurrentDuration())}`);
+      tray.setToolTip(`Tyme - ${status} - ${formatDuration(getCurrentDuration())}`);
     } else {
-      tray.setToolTip('Stempeluhr - Bereit');
+      tray.setToolTip('Tyme - Bereit');
     }
   }
 }
@@ -448,7 +476,7 @@ function showWindow() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    title: 'Stempeluhr - Zeiterfassung',
+    title: 'Tyme - Zeiterfassung',
     icon: path.join(__dirname, 'icon.png')
   });
 
@@ -473,16 +501,16 @@ function showWindow() {
 
 // App-Start
 app.whenReady().then(() => {
-  console.log('🚀 Stempeluhr startet...');
+  console.log('🚀 Tyme startet...');
   
   // Benachrichtigungen aktivieren
   if (process.platform === 'darwin') {
-    app.setName('Stempeluhr');
+    app.setName('Tyme');
   }
   
   // Tray erstellen
   tray = new Tray(createTrayIcon());
-  tray.setToolTip('Stempeluhr');
+  tray.setToolTip('Tyme');
   tray.setContextMenu(createTrayMenu());
   
   // Doppelklick auf Tray öffnet Fenster
@@ -506,7 +534,7 @@ app.whenReady().then(() => {
   // Erstes Backup bei Start
   createBackup();
   
-  console.log('✅ Stempeluhr läuft!');
+  console.log('✅ Tyme läuft!');
 });
 
 app.on('before-quit', () => {
